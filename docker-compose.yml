@@ -2,11 +2,10 @@ version: "3.8"
 services:
   dev:
     build: .
-    image: minesweeper-ebiten-dev:latest
-    container_name: minesweeper-ebiten
+    image: go-dev-124:latest
+    container_name: go-dev
+    user: dev
+    working_dir: /workspace
     volumes:
-      - .:/app
-    working_dir: /app
-    ports:
-      - "8080:8080"   # for WASM dev server
+      - .:/workspace
     command: sleep infinity

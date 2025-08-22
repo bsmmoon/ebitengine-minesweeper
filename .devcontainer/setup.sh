@@ -1,17 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Ensure module cache is sane
+# Show env for sanity
 go env
 
-# Core dev tools
-go install golang.org/x/tools/gopls@latest
-go install honnef.co/go/tools/cmd/staticcheck@latest
-go install github.com/go-delve/delve/cmd/dlv@latest
+# Pin versions compatible with Go 1.24+
+go install golang.org/x/tools/gopls@v0.20.0
+go install honnef.co/go/tools/cmd/staticcheck@2024.1.1
+go install github.com/go-delve/delve/cmd/dlv@v1.22.0
 
-# Optional: tidy modules if a go.mod exists
-if [ -f go.mod ]; then
-  go mod tidy
-fi
-
-echo "✅ Dev tools installed (gopls, staticcheck, dlv)"
+echo "✅ Installed: gopls v0.20.0, staticcheck 2024.1.1, dlv v1.22.0"

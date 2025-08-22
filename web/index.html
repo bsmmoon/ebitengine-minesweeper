@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Minesweeper (Ebiten WASM)</title>
+    <script src="wasm_exec.js"></script>
+    <script>
+      const go = new Go();
+      WebAssembly.instantiateStreaming(fetch("game.wasm"), go.importObject).then((result) => {
+        go.run(result.instance);
+      });
+    </script>
+    <style>
+      html, body { margin: 0; height: 100%; background: #111; display: grid; place-items: center; }
+      canvas { image-rendering: pixelated; }
+    </style>
+  </head>
+  <body></body>
+</html>
