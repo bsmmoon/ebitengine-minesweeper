@@ -1,0 +1,25 @@
+{
+  "name": "Minesweeper Ebiten",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "dev",
+  "workspaceFolder": "/app",
+  "containerUser": "dev",
+  "remoteUser": "dev",
+  "forwardPorts": [8080],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.Go",
+        "ms-vscode.makefile-tools",
+        "EditorConfig.EditorConfig"
+      ],
+      "settings": {
+        "go.useLanguageServer": true,
+        "go.lintTool": "staticcheck",
+        "go.testFlags": ["-v"],
+        "go.toolsManagement.autoUpdate": true
+      }
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/setup.sh"
+}
