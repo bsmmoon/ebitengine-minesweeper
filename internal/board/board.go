@@ -128,14 +128,14 @@ func (b *Board) State() State {
 }
 
 // Generate resets the board and places `mines` mines deterministically using `seed`.
-// Returns false if mines is invalid (mines < 0 or >= area).
+// Returns false if `mines` is invalid (mines < 0 or mines >= w*h).
 func (b *Board) Generate(mines int, seed int64) bool {
 	area := b.W * b.H
 	if mines < 0 || mines >= area {
 		return false
 	}
 
-	// full reset
+	// Full reset
 	for i := range b.Cells {
 		b.Cells[i] = Cell{}
 	}
@@ -143,7 +143,7 @@ func (b *Board) Generate(mines int, seed int64) bool {
 	b.RevealedSafe = 0
 	b.Exploded = false
 
-	// create list of all indices and shuffle
+	// Build index list and shuffle deterministically
 	idxs := make([]int, area)
 	for i := 0; i < area; i++ {
 		idxs[i] = i
@@ -151,12 +151,11 @@ func (b *Board) Generate(mines int, seed int64) bool {
 	rng := rand.New(rand.NewSource(seed))
 	rng.Shuffle(area, func(i, j int) { idxs[i], idxs[j] = idxs[j], idxs[i] })
 
-	// take the first N indices as mines
+	// Place first N indices as mines (SetMine updates adjacency)
 	for i := 0; i < mines; i++ {
 		id := idxs[i]
 		x := id % b.W
 		y := id / b.W
-		// SetMine handles adjacency updates
 		b.SetMine(x, y)
 	}
 	return true
