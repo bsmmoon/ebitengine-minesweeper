@@ -46,8 +46,6 @@ func TestPlayingStateMidGame(t *testing.T) {
 	if !b.Reveal(0, 0) {
 		t.Fatal("unexpected mine")
 	}
-	// On a 4x1 with a mine at (3,0), revealing (0,0) will flood to (1,0),
-	// but (2,0) remains unrevealed (Adj==1), so game should be 'playing'.
 	if b.State() != StatePlaying {
 		t.Fatalf("expected playing state, got %v", b.State())
 	}
