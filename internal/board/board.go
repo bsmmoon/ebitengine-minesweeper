@@ -63,3 +63,33 @@ func (b *Board) forEachNeighbor(x, y int, f func(nx, ny int, c *Cell)) {
 		}
 	}
 }
+
+// Reveal attempts to reveal the cell at (x,y).
+// Returns true if safe, false if mine hit.
+func (b *Board) Reveal(x, y int) bool {
+  c := b.At(x, y)
+  if c == nil || c.Revealed || c.Flagged {
+    return true // ignore reveal
+  }
+  c.Revealed = true
+  if c.Mine {
+    return false
+  }
+  if c.Adj == 0 {
+    b.forEachNeighbor(x, y, func(nx, ny int, nc *Cell) {
+      if !nc.Revealed && !nc.Mine {
+        b.Reveal(nx, ny)
+      }
+    })
+  }
+  return true
+}
+
+// ToggleFlag toggles the flagged state of a cell.
+func (b *Board) ToggleFlag(x, y int) {
+  c := b.At(x, y)
+  if c == nil || c.Revealed {
+    return
+  }
+  c.Flagged = !c.Flagged
+}
