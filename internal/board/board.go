@@ -160,3 +160,21 @@ func (b *Board) Generate(mines int, seed int64) bool {
 	}
 	return true
 }
+
+// NewGame creates a board and places `mines` deterministically with `seed`,
+// ensuring that (fx, fy) is never a mine. If (fx,fy) is mined, the seed is
+// incremented and generation retried until safe.
+func NewGame(w, h, mines int, seed int64, fx, fy int) *Board {
+	b := New(w, h)
+	for {
+		ok := b.Generate(mines, seed)
+		if !ok {
+			return b
+		}
+		c := b.At(fx, fy)
+		if c != nil && !c.Mine {
+			return b
+		}
+		seed++
+	}
+}
