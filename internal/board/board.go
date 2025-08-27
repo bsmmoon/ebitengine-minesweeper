@@ -4,13 +4,23 @@ type Cell struct {
 	Mine     bool
 	Revealed bool
 	Flagged  bool
-	Adj      int // adjacent mine count
+	Adj      int
 }
 
+type State int
+
+const (
+	StatePlaying State = iota
+	StateWon
+	StateLost
+)
+
 type Board struct {
-	W, H  int
-	Cells []Cell
-	Mines int
+	W, H         int
+	Cells        []Cell
+	Mines        int
+	RevealedSafe int  // number of revealed NON-mine cells
+	Exploded     bool // true if a mine was revealed
 }
 
 func New(w, h int) *Board {
@@ -20,13 +30,8 @@ func New(w, h int) *Board {
 	}
 }
 
-func (b *Board) InBounds(x, y int) bool {
-	return x >= 0 && y >= 0 && x < b.W && y < b.H
-}
-
-func (b *Board) Idx(x, y int) int {
-	return y*b.W + x
-}
+func (b *Board) InBounds(x, y int) bool { return x >= 0 && y >= 0 && x < b.W && y < b.H }
+func (b *Board) Idx(x, y int) int       { return y*b.W + x }
 
 func (b *Board) At(x, y int) *Cell {
 	if !b.InBounds(x, y) {
@@ -65,31 +70,57 @@ func (b *Board) forEachNeighbor(x, y int, f func(nx, ny int, c *Cell)) {
 }
 
 // Reveal attempts to reveal the cell at (x,y).
-// Returns true if safe, false if mine hit.
+// Returns true if safe, false if a mine was hit.
 func (b *Board) Reveal(x, y int) bool {
-  c := b.At(x, y)
-  if c == nil || c.Revealed || c.Flagged {
-    return true // ignore reveal
-  }
-  c.Revealed = true
-  if c.Mine {
-    return false
-  }
-  if c.Adj == 0 {
-    b.forEachNeighbor(x, y, func(nx, ny int, nc *Cell) {
-      if !nc.Revealed && !nc.Mine {
-        b.Reveal(nx, ny)
-      }
-    })
-  }
-  return true
+	c := b.At(x, y)
+	if c == nil || c.Revealed || c.Flagged {
+		return true
+	}
+	c.Revealed = true
+	if c.Mine {
+		b.Exploded = true
+		return false
+	}
+	b.RevealedSafe++
+	if c.Adj == 0 {
+		b.forEachNeighbor(x, y, func(nx, ny int, nc *Cell) {
+			if !nc.Revealed && !nc.Mine {
+				b.Reveal(nx, ny)
+			}
+		})
+	}
+	return true
 }
 
-// ToggleFlag toggles the flagged state of a cell.
+// ToggleFlag toggles the flagged state of a cell (no effect if already revealed).
 func (b *Board) ToggleFlag(x, y int) {
-  c := b.At(x, y)
-  if c == nil || c.Revealed {
-    return
-  }
-  c.Flagged = !c.Flagged
+	c := b.At(x, y)
+	if c == nil || c.Revealed {
+		return
+	}
+	c.Flagged = !c.Flagged
+}
+
+// --- Game state helpers ---
+
+func (b *Board) safeCellsTotal() int {
+	return b.W*b.H - b.Mines
+}
+
+func (b *Board) Won() bool {
+	return !b.Exploded && b.RevealedSafe == b.safeCellsTotal()
+}
+
+func (b *Board) Lost() bool {
+	return b.Exploded
+}
+
+func (b *Board) State() State {
+	if b.Lost() {
+		return StateLost
+	}
+	if b.Won() {
+		return StateWon
+	}
+	return StatePlaying
 }
